@@ -12,28 +12,73 @@
         <canvas id="canvas" width="800" height="500" display="block"></canvas>
         <script id="vs" type="notjs">
             uniform mat4 u_worldViewProjection;
+            uniform vec3 u_lightWorldPos;
+            uniform mat4 u_world;
+            uniform mat4 u_viewInverse;
+            uniform mat4 u_worldInverseTranspose;
             
             attribute vec4 position;
             attribute vec2 texcoord;
+            attribute vec3 normal;
 
             varying vec4 v_pos;
             varying vec2 v_texCoord;
-            
+            varying vec3 v_normal;
+            varying vec3 v_surfaceToLight;
+            varying vec3 v_surfaceToView;
+
             void main() {
                 v_pos = u_worldViewProjection * position;
                 v_texCoord = texcoord;
+                v_normal = (u_worldInverseTranspose * vec4(normal, 0)).xyz;
+  
+                v_surfaceToLight = u_lightWorldPos - (u_world * position).xyz ;
+                v_surfaceToView = (u_viewInverse[3] - (u_world * position)).xyz;
+  
                 gl_Position = v_pos;
             }
             
       </script>
         <script id="fs" type="notjs">
             precision mediump float;
-            varying vec2 v_texCoord;
             uniform sampler2D textura;
 
+            varying vec4 v_pos;
+            varying vec2 v_texCoord;
+            varying vec3 v_normal;
+            varying vec3 v_surfaceToLight;
+            varying vec3 v_surfaceToView;
+
+            uniform vec4 u_lightColor;
+            uniform vec4 u_ambient;
+            uniform sampler2D u_diffuse;
+            uniform vec4 u_specular;
+            uniform float u_shininess;
+            uniform float u_specularFactor;
+
+            vec4 lit(float l ,float h, float m) {
+                return 
+                    vec4(1.0, max(l, 0.0), (l > 0.0) ? pow(max(0.0, h), m) : 0.0, 1.0);
+            }
             
             void main() {
+                vec4 diffuseColor = texture2D(u_diffuse, v_texCoord);
+                vec3 a_normal = normalize(v_normal);
+                vec3 surfaceToLight = normalize(v_surfaceToLight);
+                vec3 surfaceToView = normalize(v_surfaceToView);
+  
+                vec3 halfVector = normalize( surfaceToLight + surfaceToView );
+  
+                vec4 litR = lit(dot(a_normal, surfaceToLight),
+                    dot(a_normal, halfVector), u_shininess);
+  
+                vec4 outColor = vec4(( u_lightColor * 
+                                (diffuseColor * litR.y + diffuseColor * u_ambient + 
+                                u_specular * litR.z * u_specularFactor)).rgb,
+                                diffuseColor.a);
+
                 gl_FragColor = texture2D(textura, v_texCoord);
+                //gl_FragColor = outColor;
             }
       
       </script>
@@ -53,7 +98,15 @@
             tex[1] = twgl.createTexture(gl, { src: 'jupiter.png'});
 
 
-            const uniforms = {};
+            const uniforms = {
+                u_lightWorldPos: [0, 0, 0],
+                u_lightColor: [1, 0.8, 0.8, 1],
+                u_ambient: [0, 0, 0, 1],
+                u_specular: [1, 1, 1, 1],
+                u_shininess: 50,
+                u_specularFactor: 1,
+                u_diffuse: tex,
+            };
 
             function render(time) {
                 // to make the canvas adjust to the window size
@@ -67,6 +120,7 @@
                 gl.enable(gl.DEPTH_TEST);
                 gl.enable(gl.CULL_FACE);
                 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+                gl.clearColor(0, 0, 0, 1);
 
                 const fov = 30 * Math.PI / 180;
                 const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
@@ -92,8 +146,9 @@
                 // rotate the object
                 m4.rotateY(world, time, world);
 
+                uniforms.u_viewInverse = camera;
                 uniforms.u_world = world;
-
+                uniforms.u_worldInverseTranspose = m4.transpose(m4.inverse(world));
                 uniforms.u_worldViewProjection = m4.multiply(viewProjection, world);
 
                 gl.useProgram(programInfo.program);
@@ -110,6 +165,7 @@
 
                 m4.rotateY(world, time, world);
                 m4.translate(world, [-3,0,0], world);
+                m4.rotateY(world, time, world);
 
                 uniforms.u_worldViewProjection = m4.multiply(viewProjection, world);
                 twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo[1]);
