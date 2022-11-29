@@ -1,0 +1,111 @@
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=windows-1252">
+    <script src="twgl.js/dist/5.x/twgl-full.js"></script>
+</head>
+
+<body>
+    <doctype html="">
+        <!--Miguel López, Alvaro Carrillo, Universidade de Lisboa, 2021-->
+        <title>Projeto</title>
+
+        <canvas id="canvas" width="800" height="500" display="block"></canvas>
+        <script id="vs" type="notjs">
+            uniform mat4 u_worldViewProjection;
+            
+            attribute vec4 position;
+            varying vec4 vcolor;
+            
+            void main() {
+              gl_Position = u_worldViewProjection * position;
+              vcolor = position;
+            }
+            
+      </script>
+        <script id="fs" type="notjs">
+            precision mediump float;
+            varying vec4 vcolor;
+
+            
+            void main() {
+            //gl_FragColor = vec4(1, 1, 0, 1);
+            gl_FragColor = vcolor;
+            }
+      
+      </script>
+        <script>
+            const m4 = twgl.m4;
+            const gl = document.querySelector("canvas").getContext("webgl");
+            const programInfo = twgl.createProgramInfo(gl, ["vs", "fs"]);
+
+            // make shapes
+            const bufferInfo = [];
+            //sun
+            bufferInfo[0] = twgl.primitives.createSphereBufferInfo(gl, 1, 12, 12);
+            //planet1
+            bufferInfo[1] = twgl.primitives.createSphereBufferInfo(gl, 0.5, 12, 12);
+            const uniforms = {};
+
+            function render(time) {
+                // to make the canvas adjust to the window size
+                const canvas = document.getElementById("canvas");
+                canvas.width = canvas.style.width = "100%"
+                canvas.height = canvas.style.height = "99%"
+
+                twgl.resizeCanvasToDisplaySize(gl.canvas);
+                gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+                gl.enable(gl.DEPTH_TEST);
+                gl.enable(gl.CULL_FACE);
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+                const fov = 30 * Math.PI / 180;
+                const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+                const zNear = 0.5;
+                const zFar = 20;
+                const projection = m4.perspective(fov, aspect, zNear, zFar);
+
+                const eye = [0, 0, -10];
+                const target = [0, 0, 0];
+                const up = [0, 1, 0];
+                const camera = m4.lookAt(eye, target, up);
+                const view = m4.inverse(camera);
+
+                const viewProjection = m4.multiply(projection, view);
+                world = m4.identity();
+
+                time = time * 0.001;
+
+                // Sun
+                // position of the object
+                m4.translate(world, [0,0,0], world);
+
+                // rotate the object
+                m4.rotateY(world, time, world);
+
+                uniforms.u_world = world;
+
+                uniforms.u_worldViewProjection = m4.multiply(viewProjection, world);
+
+                gl.useProgram(programInfo.program);
+                twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo[0]);
+                twgl.setUniforms(programInfo, uniforms);
+                twgl.drawBufferInfo(gl, bufferInfo[0]);
+
+                // Planet1
+                world = m4.identity();
+
+                m4.rotateY(world, time, world);
+                m4.translate(world, [-3,0,0], world);
+
+                uniforms.u_worldViewProjection = m4.multiply(viewProjection, world);
+                twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo[1]);
+                twgl.setUniforms(programInfo, uniforms);
+                twgl.drawBufferInfo(gl, bufferInfo[1]);
+                
+                requestAnimationFrame(render);
+            }
+            requestAnimationFrame(render);
+        </script>
+</body>
