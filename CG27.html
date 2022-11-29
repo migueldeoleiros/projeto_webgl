@@ -4,7 +4,6 @@
     <meta http-equiv="content-type" content="text/html; charset=windows-1252">
     <script src="twgl.js/dist/5.x/twgl-full.js"></script>
 </head>
-
 <body>
     <doctype html="">
         <!--Miguel López, Alvaro Carrillo, Universidade de Lisboa, 2021-->
@@ -15,22 +14,26 @@
             uniform mat4 u_worldViewProjection;
             
             attribute vec4 position;
-            varying vec4 vcolor;
+            attribute vec2 texcoord;
+
+            varying vec4 v_pos;
+            varying vec2 v_texCoord;
             
             void main() {
-              gl_Position = u_worldViewProjection * position;
-              vcolor = position;
+                v_pos = u_worldViewProjection * position;
+                v_texCoord = texcoord;
+                gl_Position = v_pos;
             }
             
       </script>
         <script id="fs" type="notjs">
             precision mediump float;
-            varying vec4 vcolor;
+            varying vec2 v_texCoord;
+            uniform sampler2D textura;
 
             
             void main() {
-            //gl_FragColor = vec4(1, 1, 0, 1);
-            gl_FragColor = vcolor;
+                gl_FragColor = texture2D(textura, v_texCoord);
             }
       
       </script>
@@ -40,11 +43,16 @@
             const programInfo = twgl.createProgramInfo(gl, ["vs", "fs"]);
 
             // make shapes
-            const bufferInfo = [];
+            var bufferInfo = [];
+            var tex = [];
             //sun
             bufferInfo[0] = twgl.primitives.createSphereBufferInfo(gl, 1, 12, 12);
+            tex[0] = twgl.createTexture(gl, { src: 'sun.png'});
             //planet1
             bufferInfo[1] = twgl.primitives.createSphereBufferInfo(gl, 0.5, 12, 12);
+            tex[1] = twgl.createTexture(gl, { src: 'jupiter.png'});
+
+
             const uniforms = {};
 
             function render(time) {
@@ -77,7 +85,7 @@
 
                 time = time * 0.001;
 
-                // Sun
+            // Sun
                 // position of the object
                 m4.translate(world, [0,0,0], world);
 
@@ -90,10 +98,14 @@
 
                 gl.useProgram(programInfo.program);
                 twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo[0]);
+
+                //texture
+                uniforms.textura = tex[0];
+
                 twgl.setUniforms(programInfo, uniforms);
                 twgl.drawBufferInfo(gl, bufferInfo[0]);
 
-                // Planet1
+            // Planet1
                 world = m4.identity();
 
                 m4.rotateY(world, time, world);
@@ -101,6 +113,10 @@
 
                 uniforms.u_worldViewProjection = m4.multiply(viewProjection, world);
                 twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo[1]);
+
+                //texture
+                uniforms.textura = tex[1];
+
                 twgl.setUniforms(programInfo, uniforms);
                 twgl.drawBufferInfo(gl, bufferInfo[1]);
                 
