@@ -41,7 +41,6 @@
       </script>
         <script id="fs" type="notjs">
             precision mediump float;
-            uniform sampler2D textura;
 
             varying vec4 v_pos;
             varying vec2 v_texCoord;
@@ -77,8 +76,8 @@
                                 u_specular * litR.z * u_specularFactor)).rgb,
                                 diffuseColor.a);
 
-                gl_FragColor = texture2D(textura, v_texCoord);
-                //gl_FragColor = outColor;
+                //gl_FragColor = texture2D(textura, v_texCoord);
+                gl_FragColor = outColor;
             }
       
       </script>
@@ -96,10 +95,13 @@
             //planet1
             bufferInfo[1] = twgl.primitives.createSphereBufferInfo(gl, 0.5, 12, 12);
             tex[1] = twgl.createTexture(gl, { src: 'jupiter.png'});
+            //moon
+            bufferInfo[2] = twgl.primitives.createSphereBufferInfo(gl, 0.2, 12, 12);
+            tex[2] = twgl.createTexture(gl, { src: 'jupiter.png'});
 
 
-            const uniforms = {
-                u_lightWorldPos: [0, 0, 0],
+            var uniforms = {
+                u_lightWorldPos: [0, 0, -10],
                 u_lightColor: [1, 0.8, 0.8, 1],
                 u_ambient: [0, 0, 0, 1],
                 u_specular: [1, 1, 1, 1],
@@ -155,7 +157,7 @@
                 twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo[0]);
 
                 //texture
-                uniforms.textura = tex[0];
+                uniforms.u_diffuse = tex[0];
 
                 twgl.setUniforms(programInfo, uniforms);
                 twgl.drawBufferInfo(gl, bufferInfo[0]);
@@ -171,10 +173,27 @@
                 twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo[1]);
 
                 //texture
-                uniforms.textura = tex[1];
+                uniforms.u_diffuse = tex[1];
 
                 twgl.setUniforms(programInfo, uniforms);
                 twgl.drawBufferInfo(gl, bufferInfo[1]);
+                
+            // Moon
+                world = m4.identity();
+
+                m4.translate(world, [-1,0,0], world);
+                m4.rotateY(world, time, world);
+                m4.translate(world, [-3,0,0], world);
+                m4.rotateY(world, time, world);
+
+                uniforms.u_worldViewProjection = m4.multiply(viewProjection, world);
+                twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo[2]);
+
+                //texture
+                uniforms.u_diffuse = tex[2];
+
+                twgl.setUniforms(programInfo, uniforms);
+                twgl.drawBufferInfo(gl, bufferInfo[2]);
                 
                 requestAnimationFrame(render);
             }
