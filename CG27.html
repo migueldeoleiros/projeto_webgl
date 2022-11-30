@@ -109,7 +109,7 @@
 
 
             var uniforms = {
-                u_lightWorldPos: [0, 0, -5],
+                u_lightWorldPos: [0, 3, -5],
                 u_lightColor: [1, 0.8, 0.8, 1],
                 u_ambient: [0, 0, 0, 1],
                 u_specular: [1, 1, 1, 1],
@@ -138,7 +138,7 @@
                 const zFar = 20;
                 const projection = m4.perspective(fov, aspect, zNear, zFar);
 
-                const eye = [0, 0, -10];
+                const eye = [0, 3, -10];
                 const target = [0, 0, 0];
                 const up = [0, 1, 0];
                 const camera = m4.lookAt(eye, target, up);
@@ -209,7 +209,7 @@
                 world = m4.identity();
 
                 m4.rotateY(world, time*0.5, world);
-                m4.translate(world, [-3,0,-3], world);
+                m4.translate(world, [-2.5,0,-2.5], world);
                 m4.rotateY(world, time*3, world);
 
                 uniforms.u_worldViewProjection = m4.multiply(viewProjection, world);
@@ -225,7 +225,7 @@
                 world = m4.identity();
 
                 m4.rotateY(world, time*1.2, world);
-                m4.translate(world, [-4,0,0], world);
+                m4.translate(world, [-4.5,0,0], world);
                 m4.rotateY(world, time, world);
 
                 uniforms.u_worldViewProjection = m4.multiply(viewProjection, world);
