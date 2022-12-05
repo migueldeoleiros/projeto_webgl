@@ -6,7 +6,7 @@
 </head>
 <body>
     <doctype html="">
-        <!--Miguel López, Alvaro Carrillo, Universidade de Lisboa, 2021-->
+        <!--Miguel López 59436, Alvaro Carrillo 59382, Universidade de Lisboa, 2022-->
         <title>Projeto</title>
 
         <canvas id="canvas" width="800" height="500" display="block"></canvas>
@@ -90,22 +90,22 @@
             var tex = [];
             //sun
             bufferInfo[0] = twgl.primitives.createSphereBufferInfo(gl, 0.5, 12, 12);
-            tex[0] = twgl.createTexture(gl, { src: 'sun.png'});
+            tex[0] = twgl.createTexture(gl, { src: 'files/sun.png'});
             //planet1
             bufferInfo[1] = twgl.primitives.createSphereBufferInfo(gl, 0.2, 12, 12);
-            tex[1] = twgl.createTexture(gl, { src: 'earth.png'});
+            tex[1] = twgl.createTexture(gl, { src: 'files/earth.png'});
             //moon
             bufferInfo[2] = twgl.primitives.createSphereBufferInfo(gl, 0.1, 12, 12);
-            tex[2] = twgl.createTexture(gl, { src: 'moon.png'});
+            tex[2] = twgl.createTexture(gl, { src: 'files/moon.png'});
             //planet2
             bufferInfo[3] = twgl.primitives.createSphereBufferInfo(gl, 0.2, 12, 12);
-            tex[3] = twgl.createTexture(gl, { src: 'jupiter.png'});
+            tex[3] = twgl.createTexture(gl, { src: 'files/jupiter.png'});
             //planet3
             bufferInfo[4] = twgl.primitives.createSphereBufferInfo(gl, 0.25, 12, 12);
-            tex[4] = twgl.createTexture(gl, { src: 'uranus.png'});
+            tex[4] = twgl.createTexture(gl, { src: 'files/uranus.png'});
             //planet4
             bufferInfo[5] = twgl.primitives.createSphereBufferInfo(gl, 0.15, 12, 12);
-            tex[5] = twgl.createTexture(gl, { src: 'venus.png'});
+            tex[5] = twgl.createTexture(gl, { src: 'files/venus.png'});
 
 
             var uniforms = {
@@ -113,9 +113,9 @@
                 u_lightColor: [1, 0.8, 0.8, 1],
                 u_ambient: [0, 0, 0, 1],
                 u_specular: [1, 1, 1, 1],
-                u_shininess: 50,
                 u_specularFactor: 1,
                 u_diffuse: tex,
+                u_shininess: 100,
             };
 
             function render(time) {
