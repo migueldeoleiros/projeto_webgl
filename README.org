@@ -1,0 +1,23 @@
+* Computação Gráfica 2022/23 ULisboa
+The objective of this work is to use the WebGL library to generate a 3D representation of a solar system.
+
+[[file:files/full_animation.gif]]
+** 3D objects
+We created 6 objects: A star, 4 planets and a moon (the smallest grey star)
+The camera is positioned at the coordinates [0,3,-10] towards [0,0,0] where the star is located.
+To create the objects we use an array "BufferInfo" which contains all the stars.
+
+** Textures
+We apply textures to all objects, to make it easier to handle, we use an array with the same coordinates for the texture that the coordinates in the array of objects, then we apply the textures to one of the objects before executing the "drawBufferInfo
+
+** Animation
+All objects have a rotation function on the y-axis that makes them rotate on themselves.
+Each of the planets besides the rotation function will have a translation function to position it in its orbit, and another rotation function to rotate it about the star.
+The moon has another translation function to define the distance of the orbit from its planet.
+
+#+begin_src javascript
+m4.translate(world, [-0.5,0,0], world); //defines the orbit about the planet
+m4.rotateY(world, time, world); //rotate the star
+m4.translate(world, [-2,0,0], world); //defines the orbit
+m4.rotateY(world, time, world); //rotate the object
+#+end_src
